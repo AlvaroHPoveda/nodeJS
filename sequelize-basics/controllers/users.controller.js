@@ -1,104 +1,134 @@
+// Models
+const { User } = require('../models/user.model');
+const { Post } = require('../models/post.model');
+const { Comment } = require('../models/comment.model');
+
+// Utils
 const { filterObj } = require('../util/filterObj');
 
-const users = [
-	{ id: 1, name: 'Max', age: 23 },
-	{ id: 2, name: 'John', age: 22 },
-	{ id: 3, name: 'Jill', age: 21 },
-];
-
-// Get all users
-exports.getAllUsers = (req, res) => {
-	res.status(200).json({
-		status: 'success',
-		data: { users },
-	});
+const catchAsync = (fn) => {
+  return (req, res, next) => {
+    fn(req, res, next).catch(next);
+  };
 };
 
+// Get all users
+exports.getAllUsers = catchAsync(async (req, res, next) => {
+  // Nested includes
+  const users = await User.findAll({
+    where: { status: 'active' },
+    include: [
+      {
+        model: Post,
+        include: [
+          {
+            model: Comment,
+            include: [{ model: User }]
+          }
+        ]
+      },
+      { model: Comment, include: [{ model: Post }] }
+    ]
+  });
+
+  res.status(200).json({
+    status: 'success',
+    data: { users }
+  });
+});
+
 // Get user by ID
-exports.getUserById = (req, res) => {
-	const { id } = req.params;
+exports.getUserById = async (req, res) => {
+  try {
+    const { id } = req.params;
 
-	const user = users.find(user => user.id === +id);
+    const user = await User.findOne({ where: { id } });
 
-	if (!user) {
-		res.status(404).json({
-			status: 'error',
-			message: 'User not found',
-		});
-		return;
-	}
+    if (!user) {
+      res.status(404).json({
+        status: 'error',
+        message: 'User not found'
+      });
+      return;
+    }
 
-	res.status(200).json({
-		status: 'success',
-		data: { user },
-	});
+    res.status(200).json({
+      status: 'success',
+      data: { user }
+    });
+  } catch (error) {
+    console.log(error);
+  }
 };
 
 // Save new user
-exports.createNewUser = (req, res) => {
-	const { name, age } = req.body;
+exports.createNewUser = async (req, res) => {
+  try {
+    const { name, email, password } = req.body;
 
-	if (!name || !age) {
-		res.status(400).json({
-			status: 'error',
-			message: 'Must provide a valid name and an age',
-		});
-		return;
-	}
+    if (!name || !email || !password) {
+      res.status(400).json({
+        status: 'error',
+        message: 'Must provide a valid name, email and password'
+      });
+      return;
+    }
 
-	const newUser = {
-		id: Math.floor(Math.random() * 1000),
-		name,
-		age,
-	};
+    // MUST ENCRYPT PASSWORD
+    const newUser = await User.create({
+      name,
+      email,
+      password
+    });
 
-	users.push(newUser);
-
-	res.status(201).json({
-		status: 'success',
-		data: { newUser },
-	});
+    res.status(201).json({
+      status: 'success',
+      data: { newUser }
+    });
+  } catch (error) {
+    console.log(error);
+  }
 };
 
 // Update user (patch)
 exports.updateUser = (req, res) => {
-	const { id } = req.params;
-	const data = filterObj(req.body, 'name', 'age');
+  const { id } = req.params;
+  const data = filterObj(req.body, 'name', 'age');
 
-	const userIndex = users.findIndex(user => user.id === +id);
+  // const userIndex = users.findIndex(user => user.id === +id);
 
-	if (userIndex === -1) {
-		res.status(404).json({
-			status: 'error',
-			message: 'Cant update user, not a valid ID',
-		});
-		return;
-	}
+  // if (userIndex === -1) {
+  // 	res.status(404).json({
+  // 		status: 'error',
+  // 		message: 'Cant update user, not a valid ID',
+  // 	});
+  // 	return;
+  // }
 
-	let updatedUser = users[userIndex];
+  // let updatedUser = users[userIndex];
 
-	updatedUser = { ...updatedUser, ...data };
+  // updatedUser = { ...updatedUser, ...data };
 
-	users[userIndex] = updatedUser;
+  // users[userIndex] = updatedUser;
 
-	res.status(204).json({ status: 'success' });
+  res.status(204).json({ status: 'success' });
 };
 
 // Delete user
 exports.deleteUser = (req, res) => {
-	const { id } = req.params;
+  const { id } = req.params;
 
-	const userIndex = users.findIndex(user => user.id === +id);
+  // const userIndex = users.findIndex(user => user.id === +id);
 
-	if (userIndex === -1) {
-		res.status(404).json({
-			status: 'error',
-			message: 'Cant delete user, invalid ID',
-		});
-		return;
-	}
+  // if (userIndex === -1) {
+  // 	res.status(404).json({
+  // 		status: 'error',
+  // 		message: 'Cant delete user, invalid ID',
+  // 	});
+  // 	return;
+  // }
 
-	users.splice(userIndex, 1);
+  // users.splice(userIndex, 1);
 
-	res.status(204).json({ status: 'success' });
+  res.status(204).json({ status: 'success' });
 };

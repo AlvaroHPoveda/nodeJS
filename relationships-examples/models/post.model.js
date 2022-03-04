@@ -1,7 +1,7 @@
 const { DataTypes } = require('sequelize');
 
 // Utils
-const { sequelize } = require('../util/database');
+const { sequelize } = require('../utils/database');
 
 const Post = sequelize.define('post', {
 	id: {
@@ -21,12 +21,6 @@ const Post = sequelize.define('post', {
 	userId: {
 		type: DataTypes.INTEGER,
 		allowNull: false,
-	},
-	status: {
-		// active | deleted
-		type: DataTypes.STRING(10),
-		allowNull: false,
-		defaultValue: 'active',
 	},
 });
 
