@@ -1,11 +1,11 @@
-import { useState, useEffect } from "react";
-import axios from "axios";
+import { useState, useEffect } from 'react';
+import axios from 'axios';
 
 // Components
-import Form from "./components/form/form.component";
-import TodoList from "./components/todo-list/todo-list.component";
+import Form from './components/form/form.component';
+import TodoList from './components/todo-list/todo-list.component';
 
-import "./App.css";
+import './App.css';
 
 const App = () => {
   // State
@@ -13,7 +13,7 @@ const App = () => {
 
   const addTodo = async (todo) => {
     await axios.post(`http://localhost:4000/api/v1/todos/`, {
-      content: todo.content,
+      content: todo.content
     }); // req.body.content
 
     //setTodos((prevState) => [...prevState, todo]);
@@ -21,7 +21,7 @@ const App = () => {
   };
 
   const fetchTodos = async () => {
-    const res = await axios.get("http://localhost:4000/api/v1/todos/");
+    const res = await axios.get('http://localhost:4000/api/v1/todos/');
     const resTodos = res.data;
     //console.log(resTodos);
     setTodos(resTodos);
@@ -29,7 +29,7 @@ const App = () => {
 
   const editTodo = async (id, newContent) => {
     await axios.patch(`http://localhost:4000/api/v1/todos/${id}`, {
-      content: newContent,
+      content: newContent
     });
 
     /*setTodos((prevState) => {
@@ -49,7 +49,7 @@ const App = () => {
   };
 
   const deleteTodo = async (id) => {
-    console.log(id)
+    console.log(id);
     await axios.delete(`http://localhost:4000/api/v1/todos/${id}`);
 
     /*setTodos((prevState) => {

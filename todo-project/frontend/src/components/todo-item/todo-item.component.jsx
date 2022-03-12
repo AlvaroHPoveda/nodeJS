@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useState } from 'react';
 // Components
-import Button from "../UI/button/button.component";
+import Button from '../UI/button/button.component';
 
-import classes from "./todo-item.styles.module.css";
+import classes from './todo-item.styles.module.css';
 
 const TodoItem = ({ id, content, onEditHandler, onDeleteHandler }) => {
   // State
@@ -32,13 +32,13 @@ const TodoItem = ({ id, content, onEditHandler, onDeleteHandler }) => {
       {!showEditForm ? (
         <p className={classes.item__description}>{editContent}</p>
       ) : (
-        <div className={classes["edit-form"]}>
+        <div className={classes['edit-form']}>
           <input
             type="text"
             onChange={onChangeHandler}
             value={editContent}
             placeholder={content}
-            className={classes["edit-form__input"]}
+            className={classes['edit-form__input']}
           />
 
           <Button label="Edit" type="submit" onClick={onEditTodoHandler} />
@@ -46,11 +46,11 @@ const TodoItem = ({ id, content, onEditHandler, onDeleteHandler }) => {
       )}
 
       {/* Action Buttons */}
-      <div className={classes["action-buttons"]}>
+      <div className={classes['action-buttons']}>
         <Button
           onClick={showEditFormHandler}
           type="button"
-          label={showEditForm ? "Cancel" : "Edit"}
+          label={showEditForm ? 'Cancel' : 'Edit'}
         />
         <Button onClick={onDeleteTodoHandler} type="button" label="Delete" />
       </div>

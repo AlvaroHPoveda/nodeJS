@@ -1,16 +1,17 @@
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const dotenv = require('dotenv');
+
 // Models
 const { User } = require('../models/user.model');
 const { Post } = require('../models/post.model');
 const { Comment } = require('../models/comment.model');
 
 // Utils
-const { filterObj } = require('../util/filterObj');
+const { catchAsync } = require('../util/catchAsync');
+const { AppError } = require('../util/appError');
 
-const catchAsync = (fn) => {
-  return (req, res, next) => {
-    fn(req, res, next).catch(next);
-  };
-};
+dotenv.config({ path: './config.env' });
 
 // Get all users
 exports.getAllUsers = catchAsync(async (req, res, next) => {
@@ -38,97 +39,92 @@ exports.getAllUsers = catchAsync(async (req, res, next) => {
 });
 
 // Get user by ID
-exports.getUserById = async (req, res) => {
-  try {
-    const { id } = req.params;
+exports.getUserById = catchAsync(async (req, res, next) => {
+  const { id } = req.params;
 
-    const user = await User.findOne({ where: { id } });
+  const user = await User.findOne({ where: { id } });
 
-    if (!user) {
-      res.status(404).json({
-        status: 'error',
-        message: 'User not found'
-      });
-      return;
-    }
-
-    res.status(200).json({
-      status: 'success',
-      data: { user }
-    });
-  } catch (error) {
-    console.log(error);
+  if (!user) {
+    return next(new AppError(404, 'User not found'));
   }
-};
+
+  res.status(200).json({
+    status: 'success',
+    data: { user }
+  });
+});
 
 // Save new user
-exports.createNewUser = async (req, res) => {
-  try {
+exports.createNewUser = catchAsync(
+  async (req, res, next) => {
     const { name, email, password } = req.body;
 
     if (!name || !email || !password) {
-      res.status(400).json({
-        status: 'error',
-        message: 'Must provide a valid name, email and password'
-      });
-      return;
+      return next(
+        new AppError(
+          400,
+          'Must provide a valid name, email and password'
+        )
+      );
     }
 
-    // MUST ENCRYPT PASSWORD
+    const salt = await bcrypt.genSalt(12);
+
+    const hashedPassword = await bcrypt.hash(
+      password,
+      salt
+    );
+
     const newUser = await User.create({
       name,
       email,
-      password
+      password: hashedPassword
     });
+
+    // Remove password from response
+    newUser.password = undefined;
 
     res.status(201).json({
       status: 'success',
       data: { newUser }
     });
-  } catch (error) {
-    console.log(error);
   }
-};
+);
 
-// Update user (patch)
-exports.updateUser = (req, res) => {
-  const { id } = req.params;
-  const data = filterObj(req.body, 'name', 'age');
+exports.loginUser = catchAsync(async (req, res, next) => {
+  const { email, password } = req.body;
 
-  // const userIndex = users.findIndex(user => user.id === +id);
+  // Find user given an email and has status active
+  const user = await User.findOne({
+    where: { email, status: 'active' }
+  });
 
-  // if (userIndex === -1) {
-  // 	res.status(404).json({
-  // 		status: 'error',
-  // 		message: 'Cant update user, not a valid ID',
-  // 	});
-  // 	return;
-  // }
+  // Compare entered password vs hashed password
+  if (
+    !user ||
+    !(await bcrypt.compare(password, user.password))
+  ) {
+    return next(
+      new AppError(400, 'Credentials are invalid')
+    );
+  }
 
-  // let updatedUser = users[userIndex];
+  // Create JWT
+  const token = await jwt.sign(
+    { id: user.id },
+    process.env.JWT_SECRET,
+    {
+      expiresIn: process.env.JWT_EXPIRES_IN
+    }
+  );
 
-  // updatedUser = { ...updatedUser, ...data };
+  res.status(200).json({
+    status: 'success',
+    data: { token }
+  });
+});
 
-  // users[userIndex] = updatedUser;
-
-  res.status(204).json({ status: 'success' });
-};
-
-// Delete user
-exports.deleteUser = (req, res) => {
-  const { id } = req.params;
-
-  // const userIndex = users.findIndex(user => user.id === +id);
-
-  // if (userIndex === -1) {
-  // 	res.status(404).json({
-  // 		status: 'error',
-  // 		message: 'Cant delete user, invalid ID',
-  // 	});
-  // 	return;
-  // }
-
-  // users.splice(userIndex, 1);
-
-  res.status(204).json({ status: 'success' });
-};
+// Generate credential that validates user session (token)
+// 1. Validate session
+// 2. Grant access a certain parts of our API
+// 3. Restrict access

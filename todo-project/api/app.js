@@ -20,7 +20,6 @@
 const express = require('express');
 const cors = require('cors');
 
-
 //Model
 const { ToDo } = require('./models/todo.model');
 

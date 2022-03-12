@@ -12,6 +12,12 @@ const sequelize = new Sequelize({
   database: process.env.DB, // example
   dialect: 'postgres',
   logging: false
+  // dialectOptions: {
+  //   ssl: {
+  //     require: true,
+  //     rejectUnauthorized: false
+  //   }
+  // }
 });
 
 // Connect to Heroku cloud

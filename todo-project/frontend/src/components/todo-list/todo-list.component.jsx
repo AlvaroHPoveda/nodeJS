@@ -1,7 +1,7 @@
 // Components
-import TodoItem from "../todo-item/todo-item.component";
+import TodoItem from '../todo-item/todo-item.component';
 
-import classes from "./todo-list.styles.module.css";
+import classes from './todo-list.styles.module.css';
 
 const TodoList = ({ items, onEditTodo, onDeleteTodo }) => {
   return (

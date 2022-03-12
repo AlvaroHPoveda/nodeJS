@@ -53,7 +53,7 @@ exports.createNewToDo = async (req, res) => {
 exports.updateToDoPatch = async (req, res) => {
   try {
     const { id } = req.params;
-    const data = filterObj(req.body,'content'); 
+    const data = filterObj(req.body, 'content');
 
     const todo = await ToDo.findOne({
       where: { id: id, status: 'active' }
@@ -67,7 +67,7 @@ exports.updateToDoPatch = async (req, res) => {
       return;
     }
 
-    await todo.update({ ...data }); 
+    await todo.update({ ...data });
 
     res.status(204).json({ status: 'success' });
   } catch (error) {

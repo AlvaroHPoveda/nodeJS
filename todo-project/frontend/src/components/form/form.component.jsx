@@ -1,13 +1,13 @@
-import { useState } from "react";
+import { useState } from 'react';
 
 // Components
-import Button from "../UI/button/button.component";
+import Button from '../UI/button/button.component';
 
-import classes from "./form.styles.module.css";
+import classes from './form.styles.module.css';
 
 const Form = ({ onAddTodo }) => {
   // State
-  const [todo, setTodo] = useState("");
+  const [todo, setTodo] = useState('');
   const [showError, setShowError] = useState(false);
 
   const onSubmitHandler = async (event) => {
@@ -22,13 +22,13 @@ const Form = ({ onAddTodo }) => {
     // Send data to App.js
     const newTodo = {
       id: Math.floor(Math.random() * 1000),
-      content: todo,
+      content: todo
     };
 
     console.log(newTodo);
 
     onAddTodo(newTodo);
-    setTodo("");
+    setTodo('');
   };
 
   const onChangeHandler = (event) => {
@@ -47,7 +47,7 @@ const Form = ({ onAddTodo }) => {
           Enter your To Do:
         </label>
         <input
-          className={`${classes.form__input} ${showError ? classes.error : ""}`}
+          className={`${classes.form__input} ${showError ? classes.error : ''}`}
           placeholder="Enter a desscription"
           type="text"
           value={todo}
@@ -56,7 +56,7 @@ const Form = ({ onAddTodo }) => {
           id="todo"
         />
       </div>
-      <Button type="submit" label={"Submit"} />
+      <Button type="submit" label={'Submit'} />
     </form>
   );
 };
